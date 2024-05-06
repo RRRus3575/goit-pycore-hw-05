@@ -1,5 +1,5 @@
 
-path = r'C:\Users\Руслан\Documents\GitHub\goit-pycore-hw-05\task_3\log.txt'
+
 
 def parse_log_line(line: str) -> dict:
     try:
@@ -56,28 +56,35 @@ def count_logs_by_level(logs: list) -> dict:
 
 
 
-def display_log_counts(counts: dict):
+def display_log_counts(dictionary: dict):
     try:
-        max_lengths = [max(len(str(value)) for value in column) for column in zip(*data)]
+        max_key_length = max(len(key) for key in dictionary)
+        max_value_length = max(len(str(value)) for value in dictionary.values())
+        total_width = max(max_key_length, max_value_length) + 4  # Додатковий простір для вирівнювання
 
-    
-        print("+" + "+".join("-" * (length + 2) for length in max_lengths) + "+")
+        print("-" * (total_width * 2 + 3))
+        print("| {:^{total_width}} | {:^{total_width}} |".format("Тип логу", "Кількість", total_width=total_width))
+        print("-" * (total_width * 2 + 3))
 
-    
-        for row in counts:
-            print("| " + " | ".join(str(value).ljust(length) for value, length in zip(row, max_lengths)) + " |")
+        for key, value in dictionary.items():
+            print("| {:^{width}} | {:^{width}} |".format(key, value, width=total_width))
 
-        print("+" + "+".join("-" * (length + 2) for length in max_lengths) + "+")
+        print("-" * (total_width * 2 + 3))
 
     except Exception as e:
         print("error", e)
 
+def display_type_error(type_log, list_of_dicts:list):
+        try:
+            print(f"Деталі логів для рівня '{type_log}':")
+            for dictionary in list_of_dicts:
+                print(dictionary['data'], dictionary['time'], dictionary['log_level'], '-', dictionary['message'])
 
-def parse_input(user_input):
-    path, type_log = user_input.split()
-    type_log = type_log.strip().lower()
-    return path, type_log
+        except Exception as e:
+            print("error", e)
 
+
+path = r'C:\Users\Руслан\Documents\GitHub\goit-pycore-hw-05\task_3\log.txt'
 
 def main():
     try:         
@@ -85,16 +92,29 @@ def main():
         parts = user_input.split(maxsplit=1)
         if len(parts) == 1:
             path = parts[0]
-            print(path)
+            
+            file_logs_list = load_logs(path)
+            count_logs = count_logs_by_level(file_logs_list)
+            
+            display_log_counts(count_logs)
 
         elif len(parts) == 2:
-            path, type_log = user_input.split()
-            print(path, type_log)
+            path, type_log = parts
+            type_log = type_log.strip().upper()
+
+            file_logs_list = load_logs(path)
+            count_logs = count_logs_by_level(file_logs_list)
+            list_logs = filter_logs_by_level(file_logs_list, type_log)
+            
+            display_log_counts(count_logs)
+            display_type_error(type_log, list_logs)
+            
+            
         else:
             print("No correct datas")    
 
-    except:
-        print('No correct datas')
+    except Exception as e:
+        print("error", e)
 
 
 if __name__ == "__main__":
